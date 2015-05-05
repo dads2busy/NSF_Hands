@@ -1,0 +1,10 @@
+select internal_id, grade_code, aggregate_days_absent, aggregate_days_present, src_beg_sch_yr, row_number() over (partition by internal_id, grade_code order by src_beg_sch_yr) ord --count(internal_id) cnt, (select min(src_beg_sch_yr) from match.subsidy_student_record where internal_id = s.internal_id and grade_code = s.grade_code) gr_first_yr
+from (
+select internal_id, aggregate_days_absent,to_number(aggregate_days_present, '999') aggregate_days_present,src_beg_sch_yr,grade_code,
+row_number() over (partition by internal_id, src_beg_sch_yr order by to_number(aggregate_days_present, '999') desc) ord
+from (
+select internal_id,aggregate_days_absent,aggregate_days_present,src_beg_sch_yr,dob,disadvantaged_status_flag,entry_code_id,entry_date,exit_withdrawal_code_id,exit_withdrawal_date,gifted_referral_flag,grade_code,homeless_flag,immigrant_status_flag,kg_readiness_assessment_flag,kindergarten_half_day_flag,language_spoken_nces_id,last_update_date,lep_flag,migrant_status_flag,parentally_placed_flag,pk_experience_type_id,pk_weekly_time_type_id,proficiency_type_id,reported_race_type_id,reporting_edagency_num,reporting_institution_id,reporting_instit_num,resident_edagency_num,responsible_edagency_num,responsible_institution_id,responsible_instit_num,retention_flag,sch_age_flag,spec_ed_wkly_time,speced_primary_service_pct,stu_rec_disab_cond_type_id,unaccom_homeless_youth_flag,annual_dropout_flag
+from match.subsidy_student_record
+where aggregate_days_present is not null) t
+) s
+where ord = 1 and grade_code not like 'P%'
